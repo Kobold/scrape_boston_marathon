@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import csv
 import errno
 import itertools
 import os
 import time
 
+from bs4 import BeautifulSoup
 import click
 import dataset
+import funcy as fy
 import requests
 
 
@@ -33,6 +36,54 @@ def mkdir_p(path):
 def cli():
     """Pile of commands to scrape the boston marathon results."""
     pass
+
+
+def extract_entrants(html):
+    """Generator yielding entrant info dicts given an HTML file."""
+    soup = BeautifulSoup(html, 'html5lib')
+    trs = soup.select('.tablegrid_list_item > .tablegrid_table > tbody > tr')
+
+    # Two rows per entrant, so we group them in pairs, omitting the extra end
+    # row.
+    user_rows = fy.ipartition(2, trs)
+
+    for tr_header, tr_data in user_rows:
+        header_strings = [td.get_text(strip=True)
+                          for td in tr_header.find_all('td', recursive=False)]
+        assert len(header_strings) == 9
+
+        yield {
+            'bib_number': header_strings[0],
+            'name': header_strings[1],
+            'age': header_strings[2],
+            'gender': header_strings[3],
+            'city': header_strings[4],
+            'state': header_strings[5],
+            'county': header_strings[6],
+            'origin': header_strings[7],
+        }
+
+
+@cli.command()
+@click.argument('output_csv', type=click.File('wb'))
+def output_csv(output_csv):
+    """Write a csv listing of all entrants."""
+    entries = fy.icat(extract_entrants(row['page_html']) for row in TABLE.all())
+
+    # We could technically use the first entry's keys, but I like this column order.
+    keys = [
+        'bib_number',
+        'name',
+        'age',
+        'gender',
+        'city',
+        'state',
+        'county',
+        'origin',
+    ]
+    writer = csv.DictWriter(output_csv, keys)
+    writer.writeheader()
+    writer.writerows(entries)
 
 
 @cli.command()

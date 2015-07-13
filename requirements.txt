@@ -1,3 +1,6 @@
+beautifulsoup4==4.4.0
 click==4.0
 dataset==0.6.0
+funcy==1.5
+html5lib==0.999999
 requests==2.7.0
