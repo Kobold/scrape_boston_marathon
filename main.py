@@ -68,7 +68,7 @@ def extract_entrants(html):
 @click.argument('output_csv', type=click.File('wb'))
 def output_csv(output_csv):
     """Write a csv listing of all entrants."""
-    entries = fy.icat(extract_entrants(row['page_html']) for row in TABLE.all())
+    entrants = fy.cat(extract_entrants(row['page_html']) for row in TABLE.all())
 
     # We could technically use the first entry's keys, but I like this column order.
     keys = [
@@ -83,7 +83,9 @@ def output_csv(output_csv):
     ]
     writer = csv.DictWriter(output_csv, keys)
     writer.writeheader()
-    writer.writerows(entries)
+    writer.writerows(entrants)
+
+    click.echo('Wrote %d entrants.' % len(entrants))
 
 
 @cli.command()
