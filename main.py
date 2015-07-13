@@ -132,12 +132,16 @@ def scrape_state(state_id):
 @cli.command()
 def scrape():
     """Pull down HTML from the server into dataset."""
-    for page_number, page_html in scrape_state(5):
-        TABLE.upsert(dict(
-            state_id=5,
-            page_number=page_number,
-            page_html=page_html,
-        ), ['state_id', 'page_number'])
+    # Bullshit, I know right? But no, go look at the search page.
+    state_ids = range(2, 78)
+
+    for state_id in state_ids:
+        for page_number, page_html in scrape_state(state_id):
+            TABLE.upsert(dict(
+                state_id=1,
+                page_number=page_number,
+                page_html=page_html,
+            ), ['state_id', 'page_number'])
 
 
 if __name__ == '__main__':
