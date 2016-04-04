@@ -191,7 +191,7 @@ def scrape():
     for state_id in state_ids:
         for page_number, page_html in scrape_state(state_id):
             TABLE.upsert(dict(
-                state_id=1,
+                state_id=state_id,
                 page_number=page_number,
                 page_html=page_html,
             ), ['state_id', 'page_number'])
